@@ -15,8 +15,9 @@ class CardCell: UITableViewCell{
     
     @IBOutlet weak var benefitDetail: UILabel!
     @IBOutlet weak var name: UILabel!
-    @IBOutlet weak var arrow: UIButton!
-
+    
+    @IBOutlet weak var arrow: ArrowButton!
+    
     var cardCellData: CardData? = nil {
         didSet {
             guard let data = cardCellData else {
