@@ -8,21 +8,65 @@
 import UIKit
 import FirebaseDatabase
 import SwiftUI
+import FirebaseFirestore
+import FirebaseFirestoreSwift
+
 class CardListViewController: UITableViewController {
  
 
     var cardListData: [String : CardData] = [:]
     var cardList: [CardData] = []
     var ref: DatabaseReference!
+    let db = Firestore.firestore()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         let component = UINib(nibName: "CardListCell", bundle: nil)
         tableView.register(component, forCellReuseIdentifier: "CardCell")
 
-        firebaseGetData()
+//        firebaseGetData()
+        self.getDataOnFireStore()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5){ [weak self] in
+            guard let self = self else {return}
+           
+            self.tableView.reloadData()
+        }
+        
     } //viewDidLoad
+    
+    //fireStore 에서 데이터 읽기
+    fileprivate func getDataOnFireStore() {
+    
+        db.collection("user").getDocuments() { [weak self] (querySnapshot, err) in
+            if let err = err {
+                print("Error getting documents: \(err)")
+            } else {
+                for document in querySnapshot!.documents {
+                    let result = Result {
+                        try document.data(as: CardData.self)
+                    }
+                    switch result {
+                    case .success(let cardData):
+                        if let cardData = cardData{
+                            guard let self = self else {return}
+                            self.cardList.append(cardData)
+                        }else {
+                            debugPrint("document does not exist")
+                        }
+                    case .failure(let error):
+                        print("Error decoding cardData: \(error)")
+                    } // switch
+                } // quertSnapshot
+                DispatchQueue.main.async {
+                    guard let self = self else {return}
+                    debugPrint("DispatchQueue - TableView reloadData")
+                    self.tableView.reloadData()
+                }
+            } // err == nil
+        } // getDocuments()
+    }
+    
     
     //Bundle.main.url 경로에서 json 파일 불러오기
     fileprivate func load() -> [String : CardData]? {
@@ -58,6 +102,16 @@ class CardListViewController: UITableViewController {
                 }
             });
     }
+    fileprivate func changeSelectedData(_ id: Int){
+        db.collection("user").document("card\(id)")
+            .updateData(["isSelected" : true] ){ err in
+            if let err = err {
+                print("Error writing document: \(err)")
+            } else {
+                print("Document successfully written!")
+            }
+        } // db.collection.document
+    }
     
     //Cell에 있는 버튼 클릭시
     @objc fileprivate func arrowButtonClicked(_ sender: ArrowButton) {
@@ -65,6 +119,8 @@ class CardListViewController: UITableViewController {
         guard let vc = storyboard?.instantiateViewController(withIdentifier: "ViewController") as? ViewController else { return }
         guard let index = sender.indexPath?.row else {return}
         vc.cardData = cardList[index]
+        let id = cardList[index].id
+        self.changeSelectedData(id)
         self.navigationController?.pushViewController(vc, animated: true)
     }
 
@@ -72,7 +128,10 @@ class CardListViewController: UITableViewController {
         guard let vc = storyboard?.instantiateViewController(withIdentifier: "ViewController") as? ViewController else { return }
         vc.cardData = cardList[indexPath.row]
         let id = cardList[indexPath.row].id
-        ref.child("Item\(id)/isSelected").setValue(true)
+        self.changeSelectedData(id)
+//        ref.child("Item\(id)/isSelected").setValue(true)
+      
+        
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
