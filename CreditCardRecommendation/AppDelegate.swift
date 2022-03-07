@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
       
         db.collection("user").getDocuments { snapshot,_ in
-            guard snapshot?.isEmpty == true else {debugPrint("nothing"); return}
+            guard snapshot?.isEmpty == true else {debugPrint("AppDelegate - called and user not empty"); return}
             
             let batch = db.batch()
             
@@ -36,7 +36,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let ref7 = db.collection("user").document("card7")
             let ref8 = db.collection("user").document("card8")
             let ref9 = db.collection("user").document("card9")
-            
             let cardDummyData = CreditCardDummy.self
             
             guard let data0 = cardDummyData.card0.convertToDict() else{ return}
@@ -50,20 +49,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             guard let data8 = cardDummyData.card8.convertToDict() else{ return}
             guard let data9 = cardDummyData.card9.convertToDict() else{ return}
             
+        
+           batch.setData(data0, forDocument: ref0)
+           batch.setData(data1, forDocument: ref1)
+           batch.setData(data2, forDocument: ref2)
+           batch.setData(data3, forDocument: ref3)
+           batch.setData(data4, forDocument: ref4)
+           batch.setData(data5, forDocument: ref5)
+           batch.setData(data6, forDocument: ref6)
+           batch.setData(data7, forDocument: ref7)
+           batch.setData(data8, forDocument: ref8)
+           batch.setData(data9, forDocument: ref9)
             
-            batch.setData(data0, forDocument: ref0)
-            batch.setData(data1, forDocument: ref1)
-            batch.setData(data2, forDocument: ref2)
-            batch.setData(data3, forDocument: ref3)
-            batch.setData(data4, forDocument: ref4)
-            batch.setData(data5, forDocument: ref5)
-            batch.setData(data6, forDocument: ref6)
-            batch.setData(data7, forDocument: ref7)
-            batch.setData(data8, forDocument: ref8)
-            batch.setData(data9, forDocument: ref9)
-                    
-            
-            batch.commit()
+           batch.commit()
         }
         
         return true
