@@ -9,6 +9,8 @@ import UIKit
 import SwiftUI
 import Lottie
 import FirebaseDatabase
+import FirebaseFirestore
+
 class ViewController: UIViewController {
 
     @IBOutlet weak var period: UILabel!
@@ -20,6 +22,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var animationView: AnimationView!
     var cardData: CardData?
     var ref: DatabaseReference!
+    let db = Firestore.firestore()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         ref = Database.database().reference()
@@ -35,7 +39,15 @@ class ViewController: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         guard let cardData = cardData else {return}
-        ref.child("Item\(cardData.id)/isSelected").setValue(nil)
+//        ref.child("Item\(cardData.id)/isSelected").setValue(nil)
+        db.collection("user").document("card\(cardData.id)")
+            .updateData(["isSelected" : false], completion: { err in
+                if let err = err {
+                    print("Error writing document: \(err)")
+                } else {
+                    print("Document successfully written!")
+                }
+            })
         debugPrint("viewDidDisappear - called")
     }
     
