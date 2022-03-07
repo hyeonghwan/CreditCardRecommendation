@@ -23,7 +23,8 @@ class CardCell: UITableViewCell{
             guard let data = cardCellData else {
                 debugPrint("cardCellData - 실패")
                 return}
-            let url = URL(string: data.cardImageURL)
+            guard let url = URL(string: data.cardImageURL) else {return}
+            debugPrint("ImageURL - \(url)")
             self.cardImage.kf.setImage(with: url)
             self.rank.text = "\(data.rank)위"
             self.benefitDetail.text = "\(data.promotionDetail.benefitDetail)"
